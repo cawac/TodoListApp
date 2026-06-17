@@ -1,0 +1,16 @@
+@model WebApi.Models.TodoList
+@{
+	ViewData["Title"] = "Delete Todo List";
+}
+
+<h1>Удалить список задач</h1>
+
+<div class="alert alert-warning">
+	Вы уверены, что хотите удалить список "@Model.Title"?
+</div>
+
+<form method="post" asp-action="DeleteConfirmed">
+	<input type="hidden" asp-for="Id" />
+	<button type="submit" class="btn btn-danger">Удалить</button>
+	<a class="btn btn-secondary" href="/TodoList">Отмена</a>
+</form>

@@ -1,0 +1,24 @@
+@model WebApi.Models.TodoList
+@{
+	ViewData["Title"] = "Create Todo List";
+}
+
+<h1>Создать список задач</h1>
+
+<form method="post" asp-action="Create">
+	<div class="mb-3">
+		<label asp-for="Title" class="form-label">Название</label>
+		<input asp-for="Title" class="form-control" />
+		<span asp-validation-for="Title" class="text-danger"></span>
+	</div>
+	<div class="mb-3">
+		<label asp-for="Description" class="form-label">Описание</label>
+		<textarea asp-for="Description" class="form-control"></textarea>
+	</div>
+	<button type="submit" class="btn btn-primary">Создать</button>
+	<a class="btn btn-secondary" href="/TodoList">Отмена</a>
+</form>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,45 @@
+@model WebApi.Models.TodoList
+@{
+	ViewData["Title"] = "Details";
+}
+
+<h1>Детали списка задач</h1>
+
+<dl class="row">
+	<dt class="col-sm-2">Id</dt>
+	<dd class="col-sm-10">@Model.Id</dd>
+
+	<dt class="col-sm-2">Название</dt>
+	<dd class="col-sm-10">@Model.Title</dd>
+
+	<dt class="col-sm-2">Описание</dt>
+	<dd class="col-sm-10">@Model.Description</dd>
+
+	<dt class="col-sm-2">Создано</dt>
+	<dd class="col-sm-10">@Model.CreatedAt.ToString("g")</dd>
+</dl>
+
+<h3>Элементы</h3>
+<table class="table">
+	<thead>
+		<tr>
+			<th>Id</th>
+			<th>Название</th>
+			<th>Выполнено</th>
+			<th>Приоритет</th>
+		</tr>
+	</thead>
+	<tbody>
+	@foreach (var it in Model.Items ?? Enumerable.Empty<WebApi.Models.TodoItem>())
+	{
+		<tr>
+			<td>@it.Id</td>
+			<td>@it.Title</td>
+			<td>@(it.IsCompleted ? "Да" : "Нет")</td>
+			<td>@it.Priority</td>
+		</tr>
+	}
+	</tbody>
+</table>
+
+<a class="btn btn-secondary" href="/TodoList">Назад</a>

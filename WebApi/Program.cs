@@ -8,7 +8,8 @@ builder.Services.AddDbContext<TodoListDbContext>(options =>
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Add MVC controllers with views so this project can serve Razor views
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddOpenApi();
 
@@ -22,8 +23,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseAuthorization();
 
-app.MapControllers();
+// Map controller routes (default route) to serve views from /Views
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
