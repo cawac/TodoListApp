@@ -36,9 +36,7 @@ namespace WebApi.ViewModels
 
         public DateTimeOffset? CompletedAt { get; set; }
 
-        /// <summary>
-        /// 0 = Low, 1 = Normal, 2 = High, 3 = Urgent
-        /// </summary>
+
         public int Priority { get; set; } = 1;
         public string? TodoListTitle { get; set; }
         public List<string>? Tags { get; set; }

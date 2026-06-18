@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WebApi.Migrations
 {
-    /// <inheritdoc />
+
     public partial class AddItemsTagsAndSeed : Migration
     {
         /// <inheritdoc />

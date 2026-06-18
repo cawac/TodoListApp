@@ -83,7 +83,6 @@ public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, I
             }).ToList() ?? new List<TodoItemData>()
         };
 
-        // Diagnostic logging to verify items mapping
         try
         {
             var count = dto.Items?.Count ?? 0;

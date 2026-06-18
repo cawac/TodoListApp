@@ -15,7 +15,7 @@ namespace WebApi.Migrations
     [Migration("20260427145331_AddItemsTagsAndSeed")]
     partial class AddItemsTagsAndSeed
     {
-        /// <inheritdoc />
+
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

@@ -37,7 +37,7 @@ public class TodoListController : Controller
         return View(list);
     }
 
-    public async Task<ActionResult> AllTasks(string? status)
+    public async Task<ActionResult> AllTasks(string? status, string? sort)
     {
         // status: "active" (default), "completed", "all"
         var items = (await _itemService.GetAllAsync()).ToList();
@@ -48,8 +48,21 @@ public class TodoListController : Controller
         else if (s == "completed")
             items = items.Where(i => i.IsCompleted).ToList();
 
+        // sorting: name_asc, name_desc, due_asc, due_desc, priority_asc, priority_desc
+        var so = (sort ?? "name_asc").ToLowerInvariant();
+        items = so switch
+        {
+            "name_desc" => items.OrderByDescending(i => i.Title).ToList(),
+            "due_asc" => items.OrderBy(i => i.DueAt ?? DateTimeOffset.MaxValue).ToList(),
+            "due_desc" => items.OrderByDescending(i => i.DueAt ?? DateTimeOffset.MinValue).ToList(),
+            "priority_asc" => items.OrderBy(i => i.Priority).ToList(),
+            "priority_desc" => items.OrderByDescending(i => i.Priority).ToList(),
+            _ => items.OrderBy(i => i.Title).ToList(),
+        };
+
         ViewData["StatusFilter"] = s;
-        return View("~/Views/TodoItem/Index.cshtml", items);
+        ViewData["Sort"] = so;
+        return View("~/Views/TodoItem/AllTasks.cshtml", items);
     }
     public ActionResult Create()
     {

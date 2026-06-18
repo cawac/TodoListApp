@@ -15,6 +15,7 @@ namespace WebApi.ViewModels
         [StringLength(2000)]
         public string? Notes { get; set; }
 
+        [WebApi.ViewModels.Validation.NotPastDate]
         public DateTimeOffset? DueAt { get; set; }
 
         public bool IsCompleted { get; set; }

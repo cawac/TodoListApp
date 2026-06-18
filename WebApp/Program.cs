@@ -20,12 +20,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-//app.UseHttpsRedirection();
-//app.UseStaticFiles();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 
-//app.UseRouting();
+app.UseRouting();
 
-//app.UseAuthorization();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 

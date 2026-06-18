@@ -6,7 +6,7 @@
 
 namespace WebApi.Migrations
 {
-    /// <inheritdoc />
+
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />

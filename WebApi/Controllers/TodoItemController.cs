@@ -124,4 +124,20 @@ public class TodoItemController : Controller
 
         return RedirectToAction(nameof(Index), new { todoListId = item.TodoListId });
     }
+
+    [HttpPost]
+    public async Task<IActionResult> ToggleStatus(int id, string? returnUrl)
+    {
+        var item = await _itemService.GetByIdAsync(id);
+        if (item == null) return NotFound();
+
+        item.IsCompleted = !item.IsCompleted;
+        item.CompletedAt = item.IsCompleted ? DateTimeOffset.UtcNow : null;
+        await _itemService.UpdateAsync(id, item);
+
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
+
+        return RedirectToAction(nameof(Index), new { todoListId = item.TodoListId });
+    }
 }

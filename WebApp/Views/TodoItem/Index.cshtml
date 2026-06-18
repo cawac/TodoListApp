@@ -2,39 +2,15 @@
 
 @{
 	ViewData["Title"] = "Tasks";
-	var currentFilter = (ViewData["StatusFilter"] as string) ?? "active";
 }
 
 <h1>Tasks</h1>
-
-<form method="get" asp-controller="TodoItem" asp-action="Index" class="mb-3">
-	<div class="row g-2 align-items-center">
-		<div class="col-auto">
-			<label class="form-label" for="status">Filter by status</label>
-		</div>
-		<div class="col-auto">
-			@{
-				var statusItems = new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
-				{
-					new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "Active", Value = "active", Selected = (currentFilter == "active") },
-					new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "Completed", Value = "completed", Selected = (currentFilter == "completed") },
-					new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem { Text = "All", Value = "all", Selected = (currentFilter == "all") }
-				};
-			}
-			@Html.DropDownList("status", statusItems, new { @class = "form-select", id = "status" })
-		</div>
-		<div class="col-auto">
-			<button class="btn btn-primary" type="submit">Apply</button>
-		</div>
-	</div>
-</form>
 
 <table class="table">
 	<thead>
 		<tr>
 			<th>Id</th>
 			<th>Title</th>
-			<th>List</th>
 			<th>Priority</th>
 			<th>Due</th>
 			<th>Completed</th>
@@ -53,12 +29,17 @@
 				}
 				@item.Title
 			</td>
-			<td>@item.TodoListTitle</td>
 			<td>@item.Priority</td>
 			<td>@(item.DueAt?.ToString() ?? "-")</td>
 			<td>@(item.IsCompleted ? "Yes" : "No")</td>
 			<td>
 				<a asp-action="Details" asp-controller="TodoItem" asp-route-id="@item.Id">Details</a>
+				|
+				<form asp-action="ToggleStatus" asp-controller="TodoItem" method="post" class="d-inline">
+					<input type="hidden" name="id" value="@item.Id" />
+					<input type="hidden" name="returnUrl" value="@(ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString)" />
+					<button type="submit" class="btn btn-sm btn-link">@(item.IsCompleted ? "Mark active" : "Mark completed")</button>
+				</form>
 			</td>
 		</tr>
 	}
