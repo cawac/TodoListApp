@@ -1,0 +1,35 @@
+@model WebApi.ViewModels.TodoItemCreateViewModel
+
+@{
+	ViewData["Title"] = "Create Task";
+}
+
+<h1>Create Task</h1>
+
+<form asp-action="Create" method="post">
+	<div class="mb-3">
+		<label class="form-label">Title</label>
+		<input asp-for="Title" class="form-control" />
+		<span asp-validation-for="Title" class="text-danger"></span>
+	</div>
+
+	<div class="mb-3">
+		<label class="form-label">Notes</label>
+		<textarea asp-for="Notes" class="form-control"></textarea>
+	</div>
+
+	<div class="mb-3">
+		<label class="form-label">Due Date</label>
+		<input asp-for="DueAt" type="datetime-local" class="form-control" />
+		<span asp-validation-for="DueAt" class="text-danger"></span>
+	</div>
+
+	<input type="hidden" asp-for="TodoListId" />
+
+	<button type="submit" class="btn btn-primary">Create</button>
+	<a asp-action="Index" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+}

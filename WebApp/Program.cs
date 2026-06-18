@@ -1,33 +1,34 @@
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
+using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Register DbContext from WebApi so controllers using it work in WebApp
 builder.Services.AddDbContext<TodoListDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<ITodoListDatabaseService, TodoListDatabaseService>();
+builder.Services.AddScoped<ITodoItemDatabaseService, TodoItemDatabaseService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+//app.UseHttpsRedirection();
+//app.UseStaticFiles();
 
-app.UseRouting();
+//app.UseRouting();
 
-app.UseAuthorization();
+//app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapStaticAssets();
+
+app.MapDefaultControllerRoute();
 
 app.Run();

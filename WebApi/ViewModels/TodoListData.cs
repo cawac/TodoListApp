@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.DataClasses
+namespace WebApi.ViewModels
 {
     public class TodoListData
     {
         public int Id { get; set; }
 
+        [Required]
         public string Title { get; set; } = string.Empty;
 
         public string? Description { get; set; }
@@ -38,5 +40,7 @@ namespace WebApi.DataClasses
         /// 0 = Low, 1 = Normal, 2 = High, 3 = Urgent
         /// </summary>
         public int Priority { get; set; } = 1;
+        public string? TodoListTitle { get; set; }
+        public List<string>? Tags { get; set; }
     }
 }

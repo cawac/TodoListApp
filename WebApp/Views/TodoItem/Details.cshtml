@@ -1,0 +1,54 @@
+@model WebApi.ViewModels.TodoItemData
+
+@{
+	ViewData["Title"] = "Task Details";
+}
+
+<h1>Task Details</h1>
+
+<dl class="row">
+	<dt class="col-sm-3">Title</dt>
+	<dd class="col-sm-9">@Model.Title</dd>
+
+	<dt class="col-sm-3">Notes</dt>
+	<dd class="col-sm-9">@Model.Notes</dd>
+
+	<dt class="col-sm-3">Priority</dt>
+	<dd class="col-sm-9">@Model.Priority</dd>
+
+	<dt class="col-sm-3">Completed</dt>
+	<dd class="col-sm-9">@(Model.IsCompleted ? "Yes" : "No")</dd>
+
+	<dt class="col-sm-3">Created At</dt>
+	<dd class="col-sm-9">@Model.CreatedAt</dd>
+
+	<dt class="col-sm-3">Due At</dt>
+	<dd class="col-sm-9">@(Model.DueAt?.ToString() ?? "-")</dd>
+
+	<dt class="col-sm-3">Completed At</dt>
+	<dd class="col-sm-9">@(Model.CompletedAt?.ToString() ?? "-")</dd>
+
+	<dt class="col-sm-3">List</dt>
+	<dd class="col-sm-9">@Model.TodoListTitle</dd>
+
+	<dt class="col-sm-3">Tags</dt>
+	<dd class="col-sm-9">
+		@if (Model.Tags?.Any() == true)
+		{
+			<ul>
+			@foreach(var t in Model.Tags)
+			{
+				<li>@t</li>
+			}
+			</ul>
+		}
+		else
+		{
+			<span>-</span>
+		}
+	</dd>
+</dl>
+
+<p>
+	<a asp-action="Index" asp-controller="TodoItem">Back to list</a>
+</p>

@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
-using WebApi.DataClasses;
+using WebApi.ViewModels;
 using Entity = WebApi.Models.TodoList;
 using ItemEntity = WebApi.Models.TodoItem;
 
@@ -10,8 +10,27 @@ namespace WebApi.Services;
 
 public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, ITodoListDatabaseService
 {
-    public TodoListDatabaseService(TodoListDbContext db) : base(db)
+    private readonly Microsoft.Extensions.Logging.ILogger<TodoListDatabaseService>? _logger;
+
+    public TodoListDatabaseService(TodoListDbContext db, Microsoft.Extensions.Logging.ILogger<TodoListDatabaseService>? logger = null) : base(db)
     {
+        _logger = logger;
+    }
+
+    protected override IQueryable<Entity> Query()
+    {
+        return _db.Set<Entity>()
+            .AsQueryable()
+            .Include(x => x.Items)
+                .ThenInclude(i => i.ItemTags)
+                    .ThenInclude(t => t.Tag);
+    }
+
+    public override async Task<TodoListData?> GetByIdAsync(int id, System.Threading.CancellationToken cancellationToken = default)
+    {
+        var entity = await Query().FirstOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id), cancellationToken);
+        if (entity == null) return null;
+        return ToDto(entity);
     }
 
     protected override Entity ToEntity(TodoListData dto)
@@ -63,6 +82,19 @@ public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, I
                 Priority = (int)i.Priority
             }).ToList() ?? new List<TodoItemData>()
         };
+
+        // Diagnostic logging to verify items mapping
+        try
+        {
+            var count = dto.Items?.Count ?? 0;
+            _logger?.LogDebug("ToDto: TodoList {Id} mapped with {Count} items", entity.Id, count);
+            if (count > 0)
+            {
+                var titles = string.Join(", ", dto.Items!.Select(x => x.Title));
+                _logger?.LogDebug("ToDto: Titles: {Titles}", titles);
+            }
+        }
+        catch { }
 
         return dto;
     }

@@ -1,45 +1,57 @@
-@model WebApi.Models.TodoList
+@model WebApi.ViewModels.TodoListData
+@using System.Linq
 @{
-	ViewData["Title"] = "Details";
+	ViewData["Title"] = $"{Model.Title} - Details";
 }
 
-<h1>Детали списка задач</h1>
+<h1>@Model.Title</h1>
 
-<dl class="row">
-	<dt class="col-sm-2">Id</dt>
-	<dd class="col-sm-10">@Model.Id</dd>
+<p>@Model.Description</p>
 
-	<dt class="col-sm-2">Название</dt>
-	<dd class="col-sm-10">@Model.Title</dd>
+<p>Created: @Model.CreatedAt</p>
 
-	<dt class="col-sm-2">Описание</dt>
-	<dd class="col-sm-10">@Model.Description</dd>
+<p>
+	<a asp-action="Index">Back to Lists</a> |
+	<a asp-controller="TodoItem" asp-action="Index" asp-route-todoListId="@Model.Id">View Tasks</a> |
+	<a asp-controller="TodoItem" asp-action="Create" asp-route-todoListId="@Model.Id">Add Task</a>
+</p>
 
-	<dt class="col-sm-2">Создано</dt>
-	<dd class="col-sm-10">@Model.CreatedAt.ToString("g")</dd>
-</dl>
+<h2>Tasks</h2>
 
-<h3>Элементы</h3>
-<table class="table">
-	<thead>
-		<tr>
-			<th>Id</th>
-			<th>Название</th>
-			<th>Выполнено</th>
-			<th>Приоритет</th>
-		</tr>
-	</thead>
-	<tbody>
-	@foreach (var it in Model.Items ?? Enumerable.Empty<WebApi.Models.TodoItem>())
-	{
-		<tr>
-			<td>@it.Id</td>
-			<td>@it.Title</td>
-			<td>@(it.IsCompleted ? "Да" : "Нет")</td>
-			<td>@it.Priority</td>
-		</tr>
-	}
-	</tbody>
-</table>
-
-<a class="btn btn-secondary" href="/TodoList">Назад</a>
+@if (Model.Items != null && Model.Items.Any())
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Title</th>
+				<th>Priority</th>
+				<th>Due</th>
+				<th>Completed</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+		@foreach (var item in Model.Items)
+		{
+			var isOverdue = item.DueAt.HasValue && !item.IsCompleted && item.DueAt.Value < DateTimeOffset.UtcNow;
+			<tr class="@(isOverdue ? "task-overdue" : "")">
+				<td>@item.Id</td>
+				<td>@item.Title</td>
+				<td>@item.Priority</td>
+				<td>@(item.DueAt?.ToString() ?? "-")</td>
+				<td>@(item.IsCompleted ? "Yes" : "No")</td>
+				<td>
+					<a asp-controller="TodoItem" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+					<a asp-controller="TodoItem" asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+					<a asp-controller="TodoItem" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}
+else
+{
+	<p>No tasks in this list yet.</p>
+}

@@ -1,118 +1,104 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Data;
+using WebApi.ViewModels;
 using WebApi.Models;
+using WebApi.Services;
 
-namespace WebApi.Controllers
+namespace WebApi.Controllers;
+
+public class TodoListController : Controller
 {
-    public class TodoListController : Controller
+    private readonly ITodoListDatabaseService _service;
+    private readonly ITodoItemDatabaseService _itemService;
+
+    public TodoListController(ITodoListDatabaseService service, ITodoItemDatabaseService itemService)
     {
-        private readonly TodoListDbContext _db;
-        private readonly ILogger<TodoListController> _logger;
+        _service = service;
+        _itemService = itemService;
+    }
 
-        public TodoListController(TodoListDbContext db, ILogger<TodoListController> logger)
-        {
-            _db = db;
-            _logger = logger;
-        }
+    public async Task<ActionResult> Index()
+    {
+        var lists = await _service.GetAllAsync();
+        return View(lists);
+    }
 
-        // GET: TodoListController
-        public async Task<ActionResult> Index()
-        {
-            var lists = await _db.TodoLists.AsNoTracking().ToListAsync();
-            return View(lists);
-        }
+    public async Task<ActionResult> Details(int id)
+    {
+        var list = await _service.GetByIdAsync(id);
 
-        // GET: TodoListController/Details/5
-        public async Task<ActionResult> Details(int id)
-        {
-            var list = await _db.TodoLists
-                .Include(x => x.Items)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
+        if (list == null)
+            return NotFound();
 
-            if (list == null)
-                return NotFound();
+        return View(list);
+    }
 
-            return View(list);
-        }
+    public async Task<ActionResult> AllTasks(string? status)
+    {
+        // status: "active" (default), "completed", "all"
+        var items = (await _itemService.GetAllAsync()).ToList();
 
-        // GET: TodoListController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
+        var s = (status ?? "active").ToLowerInvariant();
+        if (s == "active")
+            items = items.Where(i => !i.IsCompleted).ToList();
+        else if (s == "completed")
+            items = items.Where(i => i.IsCompleted).ToList();
 
-        // POST: TodoListController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind("Title,Description")] TodoList model)
-        {
-            if (!ModelState.IsValid)
-                return View(model);
+        ViewData["StatusFilter"] = s;
+        return View("~/Views/TodoItem/Index.cshtml", items);
+    }
+    public ActionResult Create()
+    {
+        return View(new TodoListData());
+    }
 
-            model.CreatedAt = System.DateTimeOffset.UtcNow;
-            _db.TodoLists.Add(model);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+    [HttpPost]
+    public async Task<ActionResult> Create(TodoListData model)
+    {
+        if (!ModelState.IsValid) return View(model);
 
-        // GET: TodoListController/Edit/5
-        public async Task<ActionResult> Edit(int id)
-        {
-            var list = await _db.TodoLists.FindAsync(id);
-            if (list == null)
-                return NotFound();
-            return View(list);
-        }
+        model.CreatedAt = System.DateTimeOffset.UtcNow;
+        await _service.CreateAsync(model);
+        return RedirectToAction(nameof(Index));
+    }
 
-        // POST: TodoListController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int id, [Bind("Id,Title,Description")] TodoList model)
-        {
-            if (id != model.Id)
-                return BadRequest();
+    public async Task<ActionResult> Edit(int id)
+    {
+        var list = await _service.GetByIdAsync(id);
+        if (list == null) return NotFound();
+        return View(list);
+    }
 
-            if (!ModelState.IsValid)
-                return View(model);
+    [HttpPost]
+    public async Task<ActionResult> Edit(int id, TodoListData model)
+    {
+        if (id != model.Id) return BadRequest();
+        if (!ModelState.IsValid) return View(model);
 
-            var entity = await _db.TodoLists.FindAsync(id);
-            if (entity == null)
-                return NotFound();
+        var updated = await _service.UpdateAsync(id, model);
+        if (updated == null) return NotFound();
+        return RedirectToAction(nameof(Index));
+    }
+    public async Task<ActionResult> Delete(int id)
+    {
+        var list = await _service.GetByIdAsync(id);
+        if (list == null)
+            return NotFound();
+        return View(list);
+    }
 
-            entity.Title = model.Title;
-            entity.Description = model.Description;
-            await _db.SaveChangesAsync();
+    [HttpPost]
+    public async Task<ActionResult> DeleteConfirmed(int id)
+    {
+        var list = await _service.GetByIdAsync(id);
+        if (list == null)
+            return NotFound();
 
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: TodoListController/Delete/5
-        public async Task<ActionResult> Delete(int id)
-        {
-            var list = await _db.TodoLists.FindAsync(id);
-            if (list == null)
-                return NotFound();
-            return View(list);
-        }
-
-        // POST: TodoListController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(int id)
-        {
-            _logger?.LogInformation("DeleteConfirmed called with id={Id}", id);
-            var list = await _db.TodoLists.FindAsync(id);
-            if (list == null)
-                return NotFound();
-
-            _db.TodoLists.Remove(list);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+        await _service.DeleteAsync(id);
+        return RedirectToAction(nameof(Index));
     }
 }

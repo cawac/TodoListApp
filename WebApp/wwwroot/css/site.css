@@ -21,6 +21,23 @@ body {
   margin-bottom: 60px;
 }
 
+/* overdue task highlight */
+.task-overdue {
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff0000;
+  font-weight: 700;
+}
+
+.task-overdue td {
+  color: #b30000;
+}
+
+.task-overdue .overdue-icon::before {
+  content: "\26A0";
+  color: #ff0000;
+  margin-right: 6px;
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;
