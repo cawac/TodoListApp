@@ -1,15 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WebApi.ViewModels
-{
-    // View model used when creating a new todo list
-    public class TodoListCreateViewModel
-    {
-        [Required]
-        [StringLength(200)]
-        public string Title { get; set; } = string.Empty;
+namespace WebApi.ViewModels;
 
-        [StringLength(1000)]
-        public string? Description { get; set; }
-    }
+public class TodoListCreateViewModel
+{
+    [Required]
+    [StringLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [StringLength(1000)]
+    public string? Description { get; set; }
 }

@@ -10,11 +10,9 @@ namespace WebApi.Services;
 
 public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, ITodoListDatabaseService
 {
-    private readonly Microsoft.Extensions.Logging.ILogger<TodoListDatabaseService>? _logger;
 
-    public TodoListDatabaseService(TodoListDbContext db, Microsoft.Extensions.Logging.ILogger<TodoListDatabaseService>? logger = null) : base(db)
+    public TodoListDatabaseService(TodoListDbContext db) : base(db)
     {
-        _logger = logger;
     }
 
     protected override IQueryable<Entity> Query()
@@ -86,11 +84,9 @@ public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, I
         try
         {
             var count = dto.Items?.Count ?? 0;
-            _logger?.LogDebug("ToDto: TodoList {Id} mapped with {Count} items", entity.Id, count);
             if (count > 0)
             {
                 var titles = string.Join(", ", dto.Items!.Select(x => x.Title));
-                _logger?.LogDebug("ToDto: Titles: {Titles}", titles);
             }
         }
         catch { }

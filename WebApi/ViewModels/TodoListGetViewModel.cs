@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace WebApi.ViewModels
+namespace WebApi.ViewModels;
+
+public class TodoListGetViewModel
 {
-    // View model used to display a todo list and its items (GET)
-    public class TodoListGetViewModel
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string Title { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
 
-        public string? Description { get; set; }
+    public string? Description { get; set; }
 
-        public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
-        public List<TodoItemSummaryViewModel> Items { get; set; } = new();
-    }
+    public List<TodoItemSummaryViewModel> Items { get; set; } = new();
 }

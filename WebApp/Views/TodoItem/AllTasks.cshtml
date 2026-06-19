@@ -62,7 +62,6 @@
 				<td>
 					<a asp-action="Details" asp-controller="TodoItem" asp-route-id="@item.Id">Details</a> |
 					<form asp-action="ToggleStatus" asp-controller="TodoItem" method="post" class="d-inline">
-						@Html.AntiForgeryToken()
 						<input type="hidden" name="id" value="@item.Id" />
 						<input type="hidden" name="returnUrl" value="@(ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString)" />
 						<button type="submit" class="btn btn-sm btn-link">@(item.IsCompleted ? "Mark active" : "Mark completed")</button>

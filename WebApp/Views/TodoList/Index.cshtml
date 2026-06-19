@@ -3,9 +3,9 @@
 	ViewData["Title"] = "Todo Lists";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+	<div class="d-flex justify-content-between align-items-center mb-3">
 	<h1>Todo Lists</h1>
-	<a class="btn btn-primary" href="/TodoList/Create">Create new</a>
+	<a asp-controller="TodoList" asp-action="Create" class="btn btn-primary">Create new</a>
 </div>
 
 <table class="table table-striped">
@@ -29,10 +29,10 @@
 			<td>@item.CreatedAt.ToString("g")</td>
 			<td>@(item.Items?.Count() ?? 0)</td>
 			<td>
-				<a class="btn btn-sm btn-secondary" href="/TodoList/Details/@item.Id">Details</a>
-				<a class="btn btn-sm btn-info" href="/TodoItem/Index?todoListId=@item.Id">View Tasks</a>
-				<a class="btn btn-sm btn-primary" href="/TodoList/Edit/@item.Id">Edit</a>
-				<a class="btn btn-sm btn-danger" href="/TodoList/Delete/@item.Id">Delete</a>
+				<a asp-controller="TodoList" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Details</a>
+				<a asp-controller="TodoItem" asp-action="Index" asp-route-todoListId="@item.Id" class="btn btn-sm btn-info">View Tasks</a>
+				<a asp-controller="TodoList" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Edit</a>
+				<a asp-controller="TodoList" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
 			</td>
 		</tr>
 	}

@@ -39,7 +39,6 @@ public class TodoListController : Controller
 
     public async Task<ActionResult> AllTasks(string? status, string? sort)
     {
-        // status: "active" (default), "completed", "all"
         var items = (await _itemService.GetAllAsync()).ToList();
 
         var s = (status ?? "active").ToLowerInvariant();
@@ -48,7 +47,6 @@ public class TodoListController : Controller
         else if (s == "completed")
             items = items.Where(i => i.IsCompleted).ToList();
 
-        // sorting: name_asc, name_desc, due_asc, due_desc, priority_asc, priority_desc
         var so = (sort ?? "name_asc").ToLowerInvariant();
         items = so switch
         {

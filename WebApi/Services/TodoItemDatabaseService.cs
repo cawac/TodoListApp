@@ -68,6 +68,19 @@ public class TodoItemDatabaseService : CrudService<WebApi.Models.TodoItem, TodoI
         entity.Title = dto.Title;
         entity.Notes = dto.Notes;
         entity.DueAt = dto.DueAt;
+        // Ensure CompletedAt is set when item becomes completed, and cleared when reactivated
+        if (dto.IsCompleted)
+        {
+            if (entity.CompletedAt == null)
+            {
+                entity.CompletedAt = DateTimeOffset.UtcNow;
+            }
+        }
+        else
+        {
+            entity.CompletedAt = null;
+        }
+
         entity.IsCompleted = dto.IsCompleted;
         entity.Priority = (WebApi.Models.TodoPriority)dto.Priority;
     }
