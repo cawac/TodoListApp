@@ -1,4 +1,4 @@
-@model IEnumerable<WebApi.ViewModels.TodoItemData>
+@model IEnumerable<TodoItemSummaryViewModel>
 
 @{
 	ViewData["Title"] = "Tasks";
@@ -18,12 +18,12 @@
 		</tr>
 	</thead>
 	<tbody>
-	@foreach(var item in Model)
+	@foreach (var item in Model)
 	{
-		<tr class="@(item.DueAt.HasValue && !item.IsCompleted && item.DueAt.Value < DateTimeOffset.UtcNow ? "task-overdue" : "")">
+		<tr class="@(item.IsOverdue ? "task-overdue" : "")">
 			<td>@item.Id</td>
 			<td>
-				@if(item.DueAt.HasValue && !item.IsCompleted && item.DueAt.Value < DateTimeOffset.UtcNow)
+				@if (item.IsOverdue)
 				{
 					<span class="overdue-icon"></span>
 				}

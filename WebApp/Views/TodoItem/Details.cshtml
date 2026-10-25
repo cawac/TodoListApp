@@ -1,4 +1,4 @@
-@model WebApi.ViewModels.TodoItemData
+@model TodoItemDetailsViewModel
 
 @{
 	ViewData["Title"] = "Task Details";
@@ -33,12 +33,12 @@
 
 	<dt class="col-sm-3">Tags</dt>
 	<dd class="col-sm-9">
-		@if (Model.Tags?.Any() == true)
+		@if (Model.Tags.Count > 0)
 		{
 			<ul>
-			@foreach(var t in Model.Tags)
+			@foreach (var tag in Model.Tags)
 			{
-				<li>@t</li>
+				<li>@tag</li>
 			}
 			</ul>
 		}
@@ -50,5 +50,5 @@
 </dl>
 
 <p>
-	<a asp-action="Index" asp-controller="TodoItem">Back to list</a>
+	<a asp-action="Index" asp-controller="TodoItem" asp-route-todoListId="@Model.TodoListId">Back to list</a>
 </p>

@@ -1,40 +1,8 @@
-@model IEnumerable<WebApi.ViewModels.TodoItemData>
+@model IReadOnlyList<TodoItemSummaryViewModel>
 
 @{
-	var currentFilter = (ViewData["StatusFilter"] as string) ?? "active";
-	var currentSort = (ViewData["Sort"] as string) ?? "name_asc";
+	ViewData["Title"] = "All Tasks";
 }
-
-<form method="get" asp-controller="TodoList" asp-action="AllTasks" class="mb-3">
-	<div class="form-inline">
-		<label class="mr-2">Status:</label>
-		@{
-			var statusOptions = new System.Collections.Generic.List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
-			{
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Active", "active", currentFilter == "active"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Completed", "completed", currentFilter == "completed"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("All", "all", currentFilter == "all"),
-			};
-		}
-		@Html.DropDownList("status", statusOptions, new { @class = "form-control mr-2" })
-
-		<label class="mr-2">Sort by:</label>
-		@{
-			var sortOptions = new System.Collections.Generic.List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
-			{
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Name ↑", "name_asc", currentSort == "name_asc"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Name ↓", "name_desc", currentSort == "name_desc"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Due date ↑", "due_asc", currentSort == "due_asc"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Due date ↓", "due_desc", currentSort == "due_desc"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Priority ↑", "priority_asc", currentSort == "priority_asc"),
-				new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem("Priority ↓", "priority_desc", currentSort == "priority_desc"),
-			};
-		}
-		@Html.DropDownList("sort", sortOptions, new { @class = "form-control mr-2" })
-
-		<button type="submit" class="btn btn-primary">Apply</button>
-	</div>
-</form>
 
 <table class="table">
 	<thead>
@@ -51,8 +19,7 @@
 	<tbody>
 		@foreach (var item in Model)
 		{
-			var overdue = item.DueAt.HasValue && item.DueAt.Value < DateTimeOffset.UtcNow && !item.IsCompleted;
-			<tr class="@(overdue ? "task-overdue" : "")">
+			<tr class="@(item.IsOverdue ? "task-overdue" : "")">
 				<td>@item.Id</td>
 				<td>@item.Title</td>
 				<td>@item.TodoListTitle</td>

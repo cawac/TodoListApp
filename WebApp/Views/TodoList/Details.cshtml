@@ -1,5 +1,4 @@
-@model WebApi.ViewModels.TodoListData
-@using System.Linq
+@model TodoListGetViewModel
 @{
 	ViewData["Title"] = $"{Model.Title} - Details";
 }
@@ -18,7 +17,7 @@
 
 <h2>Tasks</h2>
 
-@if (Model.Items != null && Model.Items.Any())
+@if (Model.Items.Count > 0)
 {
 	<table class="table">
 		<thead>
@@ -34,8 +33,7 @@
 		<tbody>
 		@foreach (var item in Model.Items)
 		{
-			var isOverdue = item.DueAt.HasValue && !item.IsCompleted && item.DueAt.Value < DateTimeOffset.UtcNow;
-			<tr class="@(isOverdue ? "task-overdue" : "")">
+			<tr class="@(item.IsOverdue ? "task-overdue" : "")">
 				<td>@item.Id</td>
 				<td>@item.Title</td>
 				<td>@item.Priority</td>

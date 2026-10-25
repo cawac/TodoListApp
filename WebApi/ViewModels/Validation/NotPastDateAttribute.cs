@@ -1,10 +1,10 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace WebApi.ViewModels.Validation;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-public class NotPastDateAttribute : ValidationAttribute
+public class NotPastDateAttribute : ValidationAttribute, IClientModelValidator
 {
     public NotPastDateAttribute()
     {
@@ -13,7 +13,10 @@ public class NotPastDateAttribute : ValidationAttribute
 
     public override bool IsValid(object? value)
     {
-        if (value == null) return true;
+        if (value is null)
+        {
+            return true;
+        }
 
         if (value is DateTimeOffset dto)
         {
@@ -26,5 +29,11 @@ public class NotPastDateAttribute : ValidationAttribute
         }
 
         return false;
+    }
+
+    public void AddValidation(ClientModelValidationContext context)
+    {
+        context.Attributes.TryAdd("data-val", "true");
+        context.Attributes.TryAdd("data-val-notpastdate", FormatErrorMessage(context.ModelMetadata.GetDisplayName()));
     }
 }

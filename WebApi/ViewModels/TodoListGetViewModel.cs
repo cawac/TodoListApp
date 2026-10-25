@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace WebApi.ViewModels;
 
 public class TodoListGetViewModel
@@ -13,5 +10,5 @@ public class TodoListGetViewModel
 
     public DateTimeOffset CreatedAt { get; set; }
 
-    public List<TodoItemSummaryViewModel> Items { get; set; } = new();
+    public IReadOnlyList<TodoItemSummaryViewModel> Items { get; set; } = [];
 }

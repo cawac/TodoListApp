@@ -1,19 +1,29 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using WebApi.ViewModels.Validation;
 
 namespace WebApi.ViewModels;
 
-public class TodoItemCreateViewModel
+public class TodoItemCreateViewModel : IValidatableObject
 {
-    [Required]
-    [StringLength(300)]
+    [Required(ErrorMessage = "Enter a title")]
+    [StringLength(300, MinimumLength = 3, ErrorMessage = "Title: 3 to 300 characters")]
     public string Title { get; set; } = string.Empty;
 
-    [StringLength(2000)]
+    [StringLength(2000, ErrorMessage = "Notes: up to 2000 characters")]
     public string? Notes { get; set; }
 
-    [WebApi.ViewModels.Validation.NotPastDate]
+    [Display(Name = "Due date")]
+    [NotPastDate]
     public DateTimeOffset? DueAt { get; set; }
 
+    [Range(1, int.MaxValue, ErrorMessage = "Select a todo list")]
     public int TodoListId { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!string.IsNullOrWhiteSpace(Notes) && Notes.Trim() == Title.Trim())
+        {
+            yield return new ValidationResult("Notes must not repeat the title");
+        }
+    }
 }
