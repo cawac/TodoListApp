@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -7,32 +8,19 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WebApi.Migrations
 {
-
-    public partial class AddItemsTagsAndSeed : Migration
+    /// <inheritdoc />
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTimeOffset>(
-                name: "CreatedAt",
-                table: "TodoLists",
-                type: "datetimeoffset",
-                nullable: false,
-                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
-
-            migrationBuilder.AddColumn<string>(
-                name: "Description",
-                table: "TodoLists",
-                type: "nvarchar(max)",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,19 +28,34 @@ namespace WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TodoLists",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TodoLists", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TodoItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TodoListId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DueAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    CompletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Priority = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TodoListId = table.Column<int>(type: "integer", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    DueAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CompletedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    Priority = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -69,8 +72,8 @@ namespace WebApi.Migrations
                 name: "TodoItemTags",
                 columns: table => new
                 {
-                    TodoItemId = table.Column<int>(type: "int", nullable: false),
-                    TagId = table.Column<int>(type: "int", nullable: false)
+                    TodoItemId = table.Column<int>(type: "integer", nullable: false),
+                    TagId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -101,6 +104,16 @@ namespace WebApi.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "TodoLists",
+                columns: new[] { "Id", "CreatedAt", "Description", "Title" },
+                values: new object[,]
+                {
+                    { 1, new DateTimeOffset(new DateTime(2026, 4, 1, 9, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Work-related tasks", "Work" },
+                    { 2, new DateTimeOffset(new DateTime(2026, 4, 1, 9, 5, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Chores and errands", "Home" },
+                    { 3, new DateTimeOffset(new DateTime(2026, 4, 1, 9, 10, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "University / courses", "Study" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "TodoItems",
                 columns: new[] { "Id", "CompletedAt", "CreatedAt", "DueAt", "IsCompleted", "Notes", "Priority", "Title", "TodoListId" },
                 values: new object[,]
@@ -112,27 +125,6 @@ namespace WebApi.Migrations
                     { 5, null, new DateTimeOffset(new DateTime(2026, 4, 7, 14, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new DateTimeOffset(new DateTime(2026, 5, 5, 12, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), false, "Solve practice tasks", 2, "Prepare for exam", 3 },
                     { 6, null, new DateTimeOffset(new DateTime(2026, 4, 8, 16, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), null, false, "Migrations + relationships", 0, "Read EF Core docs", 3 }
                 });
-
-            migrationBuilder.UpdateData(
-                table: "TodoLists",
-                keyColumn: "Id",
-                keyValue: 1,
-                columns: new[] { "CreatedAt", "Description" },
-                values: new object[] { new DateTimeOffset(new DateTime(2026, 4, 1, 9, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Work-related tasks" });
-
-            migrationBuilder.UpdateData(
-                table: "TodoLists",
-                keyColumn: "Id",
-                keyValue: 2,
-                columns: new[] { "CreatedAt", "Description" },
-                values: new object[] { new DateTimeOffset(new DateTime(2026, 4, 1, 9, 5, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "Chores and errands" });
-
-            migrationBuilder.UpdateData(
-                table: "TodoLists",
-                keyColumn: "Id",
-                keyValue: 3,
-                columns: new[] { "CreatedAt", "Description" },
-                values: new object[] { new DateTimeOffset(new DateTime(2026, 4, 1, 9, 10, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "University / courses" });
 
             migrationBuilder.InsertData(
                 table: "TodoItemTags",
@@ -170,13 +162,8 @@ namespace WebApi.Migrations
             migrationBuilder.DropTable(
                 name: "TodoItems");
 
-            migrationBuilder.DropColumn(
-                name: "CreatedAt",
-                table: "TodoLists");
-
-            migrationBuilder.DropColumn(
-                name: "Description",
-                table: "TodoLists");
+            migrationBuilder.DropTable(
+                name: "TodoLists");
         }
     }
 }

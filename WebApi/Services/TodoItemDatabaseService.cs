@@ -1,19 +1,29 @@
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
-using WebApi.ViewModels;
+using WebApi.Dtos;
+using WebApi.Models;
 
 namespace WebApi.Services;
 
-public class TodoItemDatabaseService : CrudService<WebApi.Models.TodoItem, TodoItemData, int>, ITodoItemDatabaseService
+public class TodoItemDatabaseService : CrudService<TodoItem, TodoItemDto, int>, ITodoItemDatabaseService
 {
-    public TodoItemDatabaseService(TodoListDbContext db) : base(db)
+    public TodoItemDatabaseService(TodoListDbContext db)
+        : base(db)
     {
     }
 
-    protected override WebApi.Models.TodoItem ToEntity(TodoItemData dto)
+    protected override IQueryable<TodoItem> Query()
     {
-        return new WebApi.Models.TodoItem
+        return Db.Set<TodoItem>()
+            .AsNoTracking()
+            .Include(x => x.TodoList)
+            .Include(x => x.ItemTags)
+                .ThenInclude(t => t.Tag);
+    }
+
+    protected override TodoItem ToEntity(TodoItemDto dto)
+    {
+        return new TodoItem
         {
             Id = dto.Id,
             TodoListId = dto.TodoListId,
@@ -23,65 +33,47 @@ public class TodoItemDatabaseService : CrudService<WebApi.Models.TodoItem, TodoI
             CreatedAt = dto.CreatedAt,
             DueAt = dto.DueAt,
             CompletedAt = dto.CompletedAt,
-            Priority = (WebApi.Models.TodoPriority)dto.Priority
+            Priority = dto.Priority,
         };
     }
 
-    protected override TodoItemData ToDto(WebApi.Models.TodoItem entity)
+    protected override TodoItemDto ToDto(TodoItem entity)
     {
-        var dto = new TodoItemData
+        return new TodoItemDto
         {
             Id = entity.Id,
             TodoListId = entity.TodoListId,
+            TodoListTitle = entity.TodoList?.Title,
             Title = entity.Title,
             Notes = entity.Notes,
             IsCompleted = entity.IsCompleted,
             CreatedAt = entity.CreatedAt,
             DueAt = entity.DueAt,
             CompletedAt = entity.CompletedAt,
-            Priority = (int)entity.Priority
+            Priority = entity.Priority,
+            Tags = entity.ItemTags
+                .Where(t => t.Tag is not null)
+                .Select(t => t.Tag!.Name)
+                .ToList(),
         };
-
-        if (entity.TodoList != null)
-        {
-            dto.TodoListTitle = entity.TodoList.Title;
-        }
-        else
-        {
-            var list = _db.Set<WebApi.Models.TodoList>().Find(entity.TodoListId);
-            if (list != null) dto.TodoListTitle = list.Title;
-        }
-
-        var tags = _db.Set<WebApi.Models.TodoItemTag>()
-            .Where(t => t.TodoItemId == entity.Id)
-            .Include(t => t.Tag)
-            .Select(t => t.Tag.Name)
-            .ToList();
-
-        dto.Tags = tags;
-
-        return dto;
     }
 
-    protected override void UpdateEntity(WebApi.Models.TodoItem entity, TodoItemData dto)
+    protected override void UpdateEntity(TodoItem entity, TodoItemDto dto)
     {
         entity.Title = dto.Title;
         entity.Notes = dto.Notes;
         entity.DueAt = dto.DueAt;
-        // Ensure CompletedAt is set when item becomes completed, and cleared when reactivated
-        if (dto.IsCompleted)
-        {
-            if (entity.CompletedAt == null)
-            {
-                entity.CompletedAt = DateTimeOffset.UtcNow;
-            }
-        }
-        else
+        entity.Priority = dto.Priority;
+
+        if (!dto.IsCompleted)
         {
             entity.CompletedAt = null;
         }
+        else if (entity.CompletedAt is null)
+        {
+            entity.CompletedAt = DateTimeOffset.UtcNow;
+        }
 
         entity.IsCompleted = dto.IsCompleted;
-        entity.Priority = (WebApi.Models.TodoPriority)dto.Priority;
     }
 }

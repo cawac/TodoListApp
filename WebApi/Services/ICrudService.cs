@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace WebApi.Services;
 
 public interface ICrudService<TDto, TKey>

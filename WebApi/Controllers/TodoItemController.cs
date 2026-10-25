@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using WebApi.Data;
+using WebApi.Mappings;
 using WebApi.Services;
 using WebApi.ViewModels;
 
@@ -9,18 +8,17 @@ namespace WebApi.Controllers;
 public class TodoItemController : Controller
 {
     private readonly ITodoItemDatabaseService _itemService;
-    private readonly ITodoListDatabaseService _listService;
 
-    public TodoItemController(ITodoItemDatabaseService itemService, ITodoListDatabaseService listService)
+    public TodoItemController(ITodoItemDatabaseService itemService)
     {
         _itemService = itemService;
-        _listService = listService;
     }
 
     public async Task<IActionResult> Index(int? todoListId)
     {
         var items = (await _itemService.GetAllAsync())
             .Where(i => !todoListId.HasValue || i.TodoListId == todoListId.Value)
+            .Select(i => i.ToSummaryViewModel())
             .ToList();
         return View(items);
     }
@@ -28,115 +26,105 @@ public class TodoItemController : Controller
     public async Task<IActionResult> Details(int id)
     {
         var item = await _itemService.GetByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item is null)
+        {
+            return NotFound();
+        }
 
-        return View(item);
+        return View(item.ToDetailsViewModel());
     }
 
     public IActionResult Create(int todoListId)
     {
-        var vm = new TodoItemCreateViewModel { TodoListId = todoListId };
-        return View(vm);
+        return View(new TodoItemCreateViewModel { TodoListId = todoListId });
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(TodoItemCreateViewModel vm)
     {
         if (!ModelState.IsValid)
-            return View(vm);
-
-        if (vm.DueAt.HasValue && vm.DueAt.Value < DateTimeOffset.UtcNow.Date)
         {
-            ModelState.AddModelError(nameof(vm.DueAt), "Due date cannot be in the past.");
             return View(vm);
         }
 
-        var dto = new TodoItemData
-        {
-            Title = vm.Title,
-            Notes = vm.Notes,
-            DueAt = vm.DueAt,
-            TodoListId = vm.TodoListId,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-
-        await _itemService.CreateAsync(dto);
-
+        await _itemService.CreateAsync(vm.ToDto());
         return RedirectToAction(nameof(Index), new { todoListId = vm.TodoListId });
     }
 
     public async Task<IActionResult> Edit(int id)
     {
         var item = await _itemService.GetByIdAsync(id);
-        if (item == null) return NotFound();
-
-        var vm = new TodoItemEditViewModel
+        if (item is null)
         {
-            Id = item.Id,
-            Title = item.Title,
-            Notes = item.Notes,
-            DueAt = item.DueAt,
-            IsCompleted = item.IsCompleted
-        };
-        return View(vm);
+            return NotFound();
+        }
+
+        return View(item.ToEditViewModel());
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(TodoItemEditViewModel vm)
     {
         if (!ModelState.IsValid)
-            return View(vm);
-
-        if (vm.DueAt.HasValue && vm.DueAt.Value < DateTimeOffset.UtcNow.Date)
         {
-            ModelState.AddModelError(nameof(vm.DueAt), "Due date cannot be in the past.");
             return View(vm);
         }
 
-        var dto = new TodoItemData
+        var item = await _itemService.GetByIdAsync(vm.Id);
+        if (item is null)
         {
-            Id = vm.Id,
-            Title = vm.Title,
-            Notes = vm.Notes,
-            DueAt = vm.DueAt,
-            IsCompleted = vm.IsCompleted
-        };
+            return NotFound();
+        }
 
-        await _itemService.UpdateAsync(vm.Id, dto);
-
+        vm.ApplyTo(item);
+        await _itemService.UpdateAsync(vm.Id, item);
         return RedirectToAction(nameof(Details), new { id = vm.Id });
     }
 
     public async Task<IActionResult> Delete(int id)
     {
         var item = await _itemService.GetByIdAsync(id);
-        if (item == null) return NotFound();
-        return View(item);
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        return View(item.ToSummaryViewModel());
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var item = await _itemService.GetByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         await _itemService.DeleteAsync(id);
-
         return RedirectToAction(nameof(Index), new { todoListId = item.TodoListId });
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleStatus(int id, string? returnUrl)
     {
         var item = await _itemService.GetByIdAsync(id);
-        if (item == null) return NotFound();
+        if (item is null)
+        {
+            return NotFound();
+        }
 
         item.IsCompleted = !item.IsCompleted;
-        item.CompletedAt = item.IsCompleted ? DateTimeOffset.UtcNow : null;
         await _itemService.UpdateAsync(id, item);
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
             return Redirect(returnUrl);
+        }
 
         return RedirectToAction(nameof(Index), new { todoListId = item.TodoListId });
     }

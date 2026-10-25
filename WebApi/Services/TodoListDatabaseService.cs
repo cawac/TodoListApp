@@ -1,100 +1,62 @@
-﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
-using WebApi.ViewModels;
-using Entity = WebApi.Models.TodoList;
-using ItemEntity = WebApi.Models.TodoItem;
+using WebApi.Dtos;
+using WebApi.Models;
 
 namespace WebApi.Services;
 
-public class TodoListDatabaseService : CrudService<Entity, TodoListData, int>, ITodoListDatabaseService
+public class TodoListDatabaseService : CrudService<TodoList, TodoListDto, int>, ITodoListDatabaseService
 {
-
-    public TodoListDatabaseService(TodoListDbContext db) : base(db)
+    public TodoListDatabaseService(TodoListDbContext db)
+        : base(db)
     {
     }
 
-    protected override IQueryable<Entity> Query()
+    protected override IQueryable<TodoList> Query()
     {
-        return _db.Set<Entity>()
-            .AsQueryable()
-            .Include(x => x.Items)
-                .ThenInclude(i => i.ItemTags)
-                    .ThenInclude(t => t.Tag);
+        return Db.Set<TodoList>()
+            .AsNoTracking()
+            .Include(x => x.Items);
     }
 
-    public override async Task<TodoListData?> GetByIdAsync(int id, System.Threading.CancellationToken cancellationToken = default)
+    protected override TodoList ToEntity(TodoListDto dto)
     {
-        var entity = await Query().FirstOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id), cancellationToken);
-        if (entity == null) return null;
-        return ToDto(entity);
-    }
-
-    protected override Entity ToEntity(TodoListData dto)
-    {
-        var entity = new Entity
+        return new TodoList
         {
             Id = dto.Id,
             Title = dto.Title,
             Description = dto.Description,
-            CreatedAt = dto.CreatedAt
+            CreatedAt = dto.CreatedAt,
         };
-
-        if (dto.Items != null && dto.Items.Count > 0)
-        {
-            entity.Items = dto.Items.Select(i => new ItemEntity
-            {
-                Id = i.Id,
-                Title = i.Title,
-                Notes = i.Notes,
-                IsCompleted = i.IsCompleted,
-                CreatedAt = i.CreatedAt,
-                DueAt = i.DueAt,
-                CompletedAt = i.CompletedAt,
-                Priority = (WebApi.Models.TodoPriority)i.Priority
-            }).ToList();
-        }
-
-        return entity;
     }
 
-    protected override TodoListData ToDto(Entity entity)
+    protected override TodoListDto ToDto(TodoList entity)
     {
-        var dto = new TodoListData
+        return new TodoListDto
         {
             Id = entity.Id,
             Title = entity.Title,
             Description = entity.Description,
             CreatedAt = entity.CreatedAt,
-            Items = entity.Items?.Select(i => new TodoItemData
-            {
-                Id = i.Id,
-                TodoListId = i.TodoListId,
-                Title = i.Title,
-                Notes = i.Notes,
-                IsCompleted = i.IsCompleted,
-                CreatedAt = i.CreatedAt,
-                DueAt = i.DueAt,
-                CompletedAt = i.CompletedAt,
-                Priority = (int)i.Priority
-            }).ToList() ?? new List<TodoItemData>()
+            Items = entity.Items
+                .Select(i => new TodoItemDto
+                {
+                    Id = i.Id,
+                    TodoListId = i.TodoListId,
+                    TodoListTitle = entity.Title,
+                    Title = i.Title,
+                    Notes = i.Notes,
+                    IsCompleted = i.IsCompleted,
+                    CreatedAt = i.CreatedAt,
+                    DueAt = i.DueAt,
+                    CompletedAt = i.CompletedAt,
+                    Priority = i.Priority,
+                })
+                .ToList(),
         };
-
-        try
-        {
-            var count = dto.Items?.Count ?? 0;
-            if (count > 0)
-            {
-                var titles = string.Join(", ", dto.Items!.Select(x => x.Title));
-            }
-        }
-        catch { }
-
-        return dto;
     }
 
-    protected override void UpdateEntity(Entity entity, TodoListData dto)
+    protected override void UpdateEntity(TodoList entity, TodoListDto dto)
     {
         entity.Title = dto.Title;
         entity.Description = dto.Description;
